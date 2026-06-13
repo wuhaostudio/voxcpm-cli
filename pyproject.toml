@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "voxcpm-cli"
+version = "0.1.0"
+description = "Slim local CLI for VoxCPM2 text-to-speech with OpenVINO."
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+  "huggingface-hub",
+  "librosa",
+  "numpy",
+  "openvino",
+  "soundfile",
+  "tokenizers"
+]
+
+[project.optional-dependencies]
+convert = [
+  "nncf",
+  "safetensors",
+  "torch>=2.5.0",
+  "transformers>=4.36.2"
+]
+
+[project.scripts]
+voxcpm = "voxcpm_cli.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["voxcpm_cli*"]
