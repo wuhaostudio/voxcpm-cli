@@ -8,8 +8,8 @@ The first stable interface is a JSON command line tool plus an agent Skill:
 python -m voxcpm_cli synth --text-file input.txt --json
 ```
 
-Model weights and converted OpenVINO artifacts are not stored in this slim tree.
-`prepare` downloads and converts them explicitly.
+Model weights, upstream VoxCPM source scripts, and converted OpenVINO artifacts are
+not stored in this slim tree. `prepare` downloads and converts them explicitly.
 
 ## Current Status
 
@@ -32,7 +32,7 @@ Not yet end-to-end verified:
 
 - Windows.
 - Python 3.10, 3.11, or 3.12.
-- Enough disk space for the original VoxCPM2 weights and converted OpenVINO files.
+- Enough disk space for the upstream VoxCPM source, original VoxCPM2 weights, and converted OpenVINO files.
 - Network access for the first `prepare` run.
 
 Runtime dependencies are declared in `pyproject.toml`:
@@ -75,6 +75,7 @@ python -m voxcpm_cli status --json
 `status` never downloads or converts model files. It reports whether the expected model directories are ready:
 
 ```text
+cache/source/VoxCPM/
 models/original/VoxCPM2/
 models/openvino/VoxCPM2/
 ```
@@ -95,7 +96,10 @@ python -m voxcpm_cli prepare --json --force-convert
 python -m voxcpm_cli prepare --json --model-dir models/original/VoxCPM2 --ov-model-dir models/openvino/VoxCPM2
 ```
 
-`prepare` downloads VoxCPM2 files from Hugging Face into `models/original/VoxCPM2/` and converts them into OpenVINO IR under `models/openvino/VoxCPM2/`.
+`prepare` downloads the upstream VoxCPM source from `https://github.com/OpenBMB/VoxCPM`
+into `cache/source/VoxCPM/`, downloads VoxCPM2 files from Hugging Face into
+`models/original/VoxCPM2/`, and converts them into OpenVINO IR under
+`models/openvino/VoxCPM2/`.
 
 ## Synthesize Speech
 
@@ -175,6 +179,7 @@ Common error codes:
 - `INVALID_ARGUMENT`
 - `INVALID_OUTPUT_PATH`
 - `MODEL_NOT_READY`
+- `VOXCPM_SOURCE_DOWNLOAD_FAILED`
 - `MODEL_DOWNLOAD_FAILED`
 - `MODEL_CONVERSION_FAILED`
 - `MODEL_LOAD_FAILED`

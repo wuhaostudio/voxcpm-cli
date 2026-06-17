@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import shutil
 import sys
+import tempfile
 import time
+import urllib.request
+import zipfile
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +17,10 @@ from . import paths
 
 
 ORIGINAL_REQUIRED = ("config.json", "model.safetensors", "tokenizer.json")
+VOXCPM_SOURCE_URL = "https://github.com/OpenBMB/VoxCPM"
+VOXCPM_SOURCE_REVISION = "main"
+VOXCPM_SOURCE_ARCHIVE_URL = f"{VOXCPM_SOURCE_URL}/archive/refs/heads/{VOXCPM_SOURCE_REVISION}.zip"
+VOXCPM_SOURCE_REQUIRED = ("src/voxcpm/model/voxcpm2.py",)
 OPENVINO_REQUIRED = (
     "openvino_embed_tokens.xml",
     "openvino_embed_tokens.bin",
@@ -44,6 +52,49 @@ class VoxCPMError(RuntimeError):
 
 def _dir_has_files(directory: Path, filenames: tuple[str, ...]) -> bool:
     return all((directory / name).is_file() for name in filenames)
+
+
+def _download_voxcpm_source(source_dir: Path) -> None:
+    source_root = source_dir.parent.resolve()
+    source_root.mkdir(parents=True, exist_ok=True)
+
+    with tempfile.TemporaryDirectory(prefix="voxcpm-source-", dir=source_root) as tmp_name:
+        tmp_dir = Path(tmp_name)
+        archive_path = tmp_dir / "VoxCPM.zip"
+        extract_dir = tmp_dir / "extract"
+
+        urllib.request.urlretrieve(VOXCPM_SOURCE_ARCHIVE_URL, archive_path)
+
+        with zipfile.ZipFile(archive_path) as archive:
+            extract_root = extract_dir.resolve()
+            for member in archive.infolist():
+                target = (extract_dir / member.filename).resolve()
+                if target != extract_root and extract_root not in target.parents:
+                    raise RuntimeError("Unsafe path in VoxCPM source archive.")
+            archive.extractall(extract_dir)
+
+        extracted_roots = [path for path in extract_dir.iterdir() if path.is_dir()]
+        if len(extracted_roots) != 1:
+            raise RuntimeError("Unexpected VoxCPM source archive layout.")
+
+        candidate = extracted_roots[0]
+        if not _dir_has_files(candidate, VOXCPM_SOURCE_REQUIRED):
+            raise RuntimeError("Downloaded VoxCPM source is incomplete.")
+
+        if source_dir.exists():
+            shutil.rmtree(source_dir)
+        shutil.move(str(candidate), str(source_dir))
+
+
+def _ensure_voxcpm_source() -> Path:
+    source_dir = paths.voxcpm_source_dir().resolve()
+    if not _dir_has_files(source_dir, VOXCPM_SOURCE_REQUIRED):
+        print(f"Downloading VoxCPM source from {VOXCPM_SOURCE_URL}...", file=sys.stderr)
+        try:
+            _download_voxcpm_source(source_dir)
+        except Exception as exc:
+            raise VoxCPMError("VOXCPM_SOURCE_DOWNLOAD_FAILED", str(exc), 2) from exc
+    return source_dir
 
 
 def _openvino_devices() -> tuple[list[str], str | None]:
@@ -81,10 +132,12 @@ def status(
     root = paths.project_root()
     model_path = Path(model_dir).expanduser().resolve() if model_dir else paths.original_model_dir(root).resolve()
     ov_path = Path(ov_model_dir).expanduser().resolve() if ov_model_dir else paths.openvino_model_dir(root).resolve()
+    source_path = paths.voxcpm_source_dir(root).resolve()
     devices, openvino_error = _openvino_devices()
 
     original_ready = _dir_has_files(model_path, ORIGINAL_REQUIRED)
     ov_ready = _dir_has_files(ov_path, OPENVINO_REQUIRED)
+    source_ready = _dir_has_files(source_path, VOXCPM_SOURCE_REQUIRED)
     selected_device = select_device(device, devices)
 
     result: dict[str, Any] = {
@@ -92,8 +145,10 @@ def status(
         "ready": original_ready and ov_ready and openvino_error is None,
         "model_ready": original_ready,
         "ov_model_ready": ov_ready,
+        "voxcpm_source_ready": source_ready,
         "model_dir": str(model_path),
         "ov_model_dir": str(ov_path),
+        "voxcpm_source_dir": str(source_path),
         "available_devices": devices,
         "selected_device": selected_device,
     }
@@ -133,6 +188,7 @@ def prepare_model(
     if force_convert or not state["ov_model_ready"]:
         print("Converting VoxCPM2 model to OpenVINO IR...", file=sys.stderr)
         try:
+            _ensure_voxcpm_source()
             from .voxcpm2_tts_helper import convert_voxcpm2_model
 
             convert_voxcpm2_model(str(model_path), str(ov_path))

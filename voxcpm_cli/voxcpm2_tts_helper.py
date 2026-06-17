@@ -16,6 +16,8 @@ from typing import Optional, Tuple, List, Generator, Union
 import numpy as np
 import openvino as ov
 
+from . import paths
+
 try:
     import torch
     import torch.nn as nn
@@ -40,7 +42,7 @@ except ImportError:
 # ---------------------------------------------------------------------------
 # VoxCPM source on sys.path (needed for conversion)
 # ---------------------------------------------------------------------------
-VOXCPM_SRC = Path(__file__).resolve().parents[1] / "third_party" / "VoxCPM" / "src"
+VOXCPM_SRC = paths.voxcpm_source_dir() / "src"
 if str(VOXCPM_SRC) not in sys.path:
     sys.path.insert(0, str(VOXCPM_SRC))
 

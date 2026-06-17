@@ -1,0 +1,53 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Build and packaging output
+build/
+dist/
+*.egg-info/
+*.egg
+pip-wheel-metadata/
+
+# Test, type-checker, and linter caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Local environment and machine-specific files
+.env
+.env.*
+*.log
+
+# Editor and OS files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Runtime cache
+cache/*
+!cache/.gitkeep
+
+# Generated audio output
+output/*
+!output/.gitkeep
+
+# Downloaded model weights and converted OpenVINO artifacts
+models/original/*
+!models/original/.gitkeep
+models/openvino/*
+!models/openvino/.gitkeep

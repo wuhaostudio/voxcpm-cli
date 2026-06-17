@@ -30,6 +30,14 @@ def cache_dir(root: Path | None = None) -> Path:
     return (root or project_root()) / "cache"
 
 
+def source_cache_dir(root: Path | None = None) -> Path:
+    return cache_dir(root) / "source"
+
+
+def voxcpm_source_dir(root: Path | None = None) -> Path:
+    return source_cache_dir(root) / "VoxCPM"
+
+
 def resolve_output_path(value: str | None, root: Path | None = None) -> Path:
     base = output_dir(root).resolve()
     if value:
