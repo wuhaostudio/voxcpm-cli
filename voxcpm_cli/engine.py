@@ -17,6 +17,7 @@ from . import paths
 
 
 ORIGINAL_REQUIRED = ("config.json", "model.safetensors", "tokenizer.json")
+AUDIO_VAE_REQUIRED_ANY = ("audiovae.safetensors", "audiovae.pth")
 VOXCPM_SOURCE_URL = "https://github.com/OpenBMB/VoxCPM"
 VOXCPM_SOURCE_REVISION = "main"
 VOXCPM_SOURCE_ARCHIVE_URL = f"{VOXCPM_SOURCE_URL}/archive/refs/heads/{VOXCPM_SOURCE_REVISION}.zip"
@@ -52,6 +53,12 @@ class VoxCPMError(RuntimeError):
 
 def _dir_has_files(directory: Path, filenames: tuple[str, ...]) -> bool:
     return all((directory / name).is_file() for name in filenames)
+
+
+def _original_model_ready(directory: Path) -> bool:
+    return _dir_has_files(directory, ORIGINAL_REQUIRED) and any(
+        (directory / name).is_file() for name in AUDIO_VAE_REQUIRED_ANY
+    )
 
 
 def _download_voxcpm_source(source_dir: Path) -> None:
@@ -135,7 +142,7 @@ def status(
     source_path = paths.voxcpm_source_dir(root).resolve()
     devices, openvino_error = _openvino_devices()
 
-    original_ready = _dir_has_files(model_path, ORIGINAL_REQUIRED)
+    original_ready = _original_model_ready(model_path)
     ov_ready = _dir_has_files(ov_path, OPENVINO_REQUIRED)
     source_ready = _dir_has_files(source_path, VOXCPM_SOURCE_REQUIRED)
     selected_device = select_device(device, devices)
@@ -176,7 +183,7 @@ def prepare_model(
             snapshot_download(
                 repo_id="openbmb/VoxCPM2",
                 local_dir=str(model_path),
-                allow_patterns=["*.json", "*.safetensors", "tokenizer*"],
+                allow_patterns=["*.json", "*.safetensors", "*.pth", "tokenizer*"],
             )
         except Exception as exc:
             raise VoxCPMError("MODEL_DOWNLOAD_FAILED", str(exc), 2) from exc
