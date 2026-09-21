@@ -34,7 +34,7 @@ Skill, so it works equally well from a terminal, a script, or an LLM agent.
 └────────────┘                     │ (gitignored artifacts)│
                                    └───────────┬───────────┘
                                                │
-                          python -m voxcpm_cli│ synth
+                          voxcpm              │ synth
                                                ▼
                                    ┌───────────────────────┐
                                    │ OpenVINO pipeline      │
@@ -81,16 +81,16 @@ python -m pip install -e ".[convert]"
 
 ```bash
 # 1. Check whether models and OpenVINO are ready (never downloads anything)
-python -m voxcpm_cli status --json
+voxcpm status --json
 
 # 2. If not ready, download & convert (network + disk use — approve first)
-python -m voxcpm_cli prepare --json
+voxcpm prepare --json
 
 # 3. Synthesize
-python -m voxcpm_cli synth --text "你好" --json
+voxcpm synth --text "你好" --json
 ```
 
-The CLI is also installed as the `voxcpm` console script after `pip install`.
+`pip install` registers the `voxcpm` console script; `python -m voxcpm_cli` also works when the package is on the path.
 
 ## CLI Reference
 
@@ -103,7 +103,7 @@ Report whether the expected artifacts exist and which OpenVINO device would
 be used:
 
 ```bash
-python -m voxcpm_cli status --json
+voxcpm status --json
 ```
 
 Expected directories:
@@ -120,15 +120,15 @@ Download the upstream source, the VoxCPM2 weights (Hugging Face), and
 convert them into OpenVINO IR under `models/openvino/VoxCPM2/`:
 
 ```bash
-python -m voxcpm_cli prepare --json
+voxcpm prepare --json
 ```
 
 Useful options:
 
 ```bash
-python -m voxcpm_cli prepare --json --device AUTO
-python -m voxcpm_cli prepare --json --force-convert
-python -m voxcpm_cli prepare --json \
+voxcpm prepare --json --device AUTO
+voxcpm prepare --json --force-convert
+voxcpm prepare --json \
   --model-dir models/original/VoxCPM2 \
   --ov-model-dir models/openvino/VoxCPM2
 ```
@@ -139,20 +139,20 @@ Generate a WAV file. Provide exactly one of `--text` or `--text-file`:
 
 ```bash
 # Short text
-python -m voxcpm_cli synth --text "你好" --json
+voxcpm synth --text "你好" --json
 
 # Long text from a file
-python -m voxcpm_cli synth --text-file input.txt --json
+voxcpm synth --text-file input.txt --json
 
 # Explicit output path (must stay inside output/)
-python -m voxcpm_cli synth --text-file input.txt --output output/demo.wav --json
+voxcpm synth --text-file input.txt --output output/demo.wav --json
 
 # Voice instruction
-python -m voxcpm_cli synth --text-file input.txt \
+voxcpm synth --text-file input.txt \
   --voice-instruction "温柔、自然、语速适中" --json
 
 # Generation parameters
-python -m voxcpm_cli synth --text-file input.txt \
+voxcpm synth --text-file input.txt \
   --cfg-value 2.0 --inference-timesteps 10 --max-len 2000 \
   --device AUTO --json
 ```
@@ -174,7 +174,7 @@ On success, stdout is JSON:
 ### `--version`
 
 ```bash
-python -m voxcpm_cli --version
+voxcpm --version
 ```
 
 ## Error Handling
@@ -215,10 +215,10 @@ Common error codes:
 The repo includes an agent Skill in `skills/voxcpm-tts/SKILL.md`. The
 workflow it describes:
 
-1. Run `python -m voxcpm_cli status --json`.
-2. If not ready, ask the user before running `python -m voxcpm_cli prepare --json`.
+1. Run `voxcpm status --json`.
+2. If not ready, ask the user before running `voxcpm prepare --json`.
 3. Write long text to a temporary `.txt` file.
-4. Run `python -m voxcpm_cli synth --text-file <file> --json`.
+4. Run `voxcpm synth --text-file <file> --json`.
 5. Return the WAV path, sample rate, and format.
 
 Rules: use the local CLI (never a server); do not expose sensitive text in
@@ -232,7 +232,7 @@ voxcpm-cli/
 ├── LICENSE                   # Apache-2.0
 ├── README.md
 ├── voxcpm_cli/
-│   ├── __main__.py          # python -m voxcpm_cli entry
+│   ├── __main__.py          # voxcpm entry
 │   ├── cli.py               # argparse + JSON output, exit codes
 │   ├── engine.py            # status / prepare / synthesize orchestration
 │   ├── paths.py             # Artifact & output-path resolution
