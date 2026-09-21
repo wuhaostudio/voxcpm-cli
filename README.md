@@ -1,6 +1,7 @@
 # VoxCPM CLI
 
 <p align="left">
+  <img src="assets/logo.svg" alt="VoxCPM CLI logo" width="240" /><br />
   <img alt="Python" src="https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB?logo=python&logoColor=white" />
   <img alt="Platform" src="https://img.shields.io/badge/Platform-Windows-lightgrey" />
   <img alt="Runtime" src="https://img.shields.io/badge/Runtime-OpenVINO-685B4C" />
@@ -230,6 +231,7 @@ final replies; do not download or convert models without explicit approval.
 voxcpm-cli/
 ├── pyproject.toml            # Package + dependencies (and the convert extra)
 ├── LICENSE                   # Apache-2.0
+├── assets/logo.svg           # README header logo
 ├── README.md
 ├── voxcpm_cli/
 │   ├── __main__.py          # voxcpm entry
