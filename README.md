@@ -1,11 +1,12 @@
 # VoxCPM CLI
 
-<p align="left">
+<p align="center">
   <img src="assets/logo.svg" alt="VoxCPM CLI logo" width="240" /><br />
   <img alt="Python" src="https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB?logo=python&logoColor=white" />
   <img alt="Platform" src="https://img.shields.io/badge/Platform-Windows-lightgrey" />
   <img alt="Runtime" src="https://img.shields.io/badge/Runtime-OpenVINO-685B4C" />
   <img alt="License" src="https://img.shields.io/badge/License-Apache%202.0-4DAB8A" />
+  <img alt="Stars" src="https://img.shields.io/github/stars/wuhaostudio/voxcpm-cli?label=Stars" />
 </p>
 
 A slim local command-line tool for [VoxCPM2](https://github.com/OpenBMB/VoxCPM)
